@@ -410,6 +410,21 @@ int main(int argc, char *argv[]) {
 
 
 // (pinning params)
+    m = msg;
+    *m++ = 0x3b;
+unsigned short PinSpeedKPH=2, CntSeconds=3, UnPinSpeedKPH=5, UnPinCntSecs=3, UnPinDistMeters=5; 
+    *m++ = PinSpeedKPH>>8;
+    *m++ = PinSpeedKPH&0xff;
+    *m++ = CntSeconds>>8;
+    *m++ = CntSeconds&0xff;
+    *m++ = UnPinSpeedKPH>>8;
+    *m++ = UnPinSpeedKPH&0xff;
+    *m++ = UnPinCntSecs>>8;
+    *m++ = UnPinCntSecs&0xff;
+    *m++ = UnPinDistMeters>>8;
+    *m++ = UnPinDistMeters&0xff;
+    setupbuf((unsigned)(m - msg), msg);
+//getresp(2);
 
 //Set NMEA rates "every second", maybe every rate interval
     m = msg;
