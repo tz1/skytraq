@@ -352,4 +352,5 @@ int main(int argc, char *argv[]) {
         getgpsinfo(nmeastring);
     }
     printf("LAT=%d LON=%d ALT=%d\n", gpst.llat, gpst.llon, gpst.alt);
+    printf("STLAT=%d STLON=%d STALT=%d\n", (gpst.llat+5000)/10000, (gpst.llon+5000)/10000, (gpst.alt+50)/100);
 }
