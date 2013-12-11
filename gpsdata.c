@@ -332,7 +332,10 @@ int main(int argc, char *argv[]) {
     if(gpsfd < 0) return gpsfd;
     char nmeastring[4096];
     int i,j;
-    for(;;) {
+
+    gpst.llat= gpst.llon= gpst.alt = 0;
+
+    while( gpst.llat == 0 ||  gpst.llon == 0 || gpst.alt == 0 ) {
         i = read(gpsfd, nmeastring, 1);
         if(i != 1)
             return i;
@@ -347,6 +350,6 @@ int main(int argc, char *argv[]) {
         }
         nmeastring[j]= 0;
         getgpsinfo(nmeastring);
-        printf("%d %d %d\n", gpst.llat, gpst.llon, gpst.alt);
     }
+    printf("LAT=%d LON=%d ALT=%d\n", gpst.llat, gpst.llon, gpst.alt);
 }
