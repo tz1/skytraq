@@ -357,6 +357,26 @@ int main(int argc, char *argv[]) {
             if( gpsfd < 0 )
                 opengps();
 
+// System Restart
+    m = msg;
+    *m++ = 1;
+    *m++ = 1;           // 1=hot, 2=warm, 3=cold
+    *m++ = (gmt->tm_year + 1900) >> 8;
+    *m++ = (gmt->tm_year + 1900) & 0xff;;
+    *m++ = gmt->tm_mon + 1;
+    *m++ = gmt->tm_mday;
+    *m++ = gmt->tm_hour;
+    *m++ = gmt->tm_min;
+    *m++ = gmt->tm_sec;
+    *m++ = 4200 >> 8;           //lat U16 deg*100
+    *m++ = 4200 & 255;           //lat U16
+    *m++ = -10200 >> 8;           //lon U16
+    *m++ = -10200 & 255;
+    *m++ = 1000 >> 8;           //alt U16 meter
+    *m++ = 1000 & 255;
+    setupbuf((unsigned)(m - msg), msg);
+//getresp(2);
+
 //Query Ephem
 //  setupbuf (2, "\x30\x00"); // 0 - get all
 //  getresp (34);
@@ -404,8 +424,6 @@ int main(int argc, char *argv[]) {
 
 
 
-    close(gpsfd);
-    return 0;
 
 
 
@@ -453,23 +471,10 @@ unsigned short PinSpeedKPH=2, CntSeconds=3, UnPinSpeedKPH=5, UnPinCntSecs=3, UnP
     setupbuf((unsigned)(m - msg), msg);
 //getresp(2);
 
-// System Restart
-    m = msg;
-    *m++ = 1;
-    *m++ = 1;           // 1=hot, 2=warm, 3=cold
-    *m++ = (gmt->tm_year + 1900) >> 8;
-    *m++ = (gmt->tm_year + 1900) & 0xff;;
-    *m++ = gmt->tm_mon + 1;
-    *m++ = gmt->tm_mday;
-    *m++ = gmt->tm_hour;
-    *m++ = gmt->tm_min;
-    *m++ = gmt->tm_sec;
-    *m++ = 4200 >> 8;           //lat U16 deg*100
-    *m++ = 4200 & 255;           //lat U16
-    *m++ = -10200 >> 8;           //lon U16
-    *m++ = -10200 & 255;
-    *m++ = 1000 >> 8;           //alt U16 meter
-    *m++ = 1000 & 255;
-    setupbuf((unsigned)(m - msg), msg);
-//getresp(2);
+
+
+close(gpsfd);
+return 0;
+
+
 }

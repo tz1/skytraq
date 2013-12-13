@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "gpstat.h"
 //NMEA field data extraction helpers
 
@@ -43,7 +45,6 @@ static int getndp(char *d, int p) {
     return i;
 }
 
-static int cidx = 0;
 static void gethms(int i) {
     //hms field[i]
     char *c = field[i];
@@ -81,22 +82,6 @@ static void getll(int f) {
     //    if (l != gpst.llon)
     //        chg = 1;
     gpst.llon = l;
-}
-
-static int firstlock = 0;
-
-// sync internal lock on first lock
-static void writelock() {
-    firstlock = 1;
-#if 0
-    char cmd[256];
-    int i;
-    // set system clock - linux generic
-    sprintf(cmd, "sudo date -u -s %02d/%02d/20%02d", gpst.mo,gpst.dy,gpst.yr);
-    sprintf(cmd, "sudo date -u -s %02d:%02d:%02d", gpst.hr,gpst.mn,gpst.sc);
-    sprintf(cmd, "sudo hwclock --systohc");
-    i = system(cmd);
-#endif
 }
 
 // expects single null terminated strings (line ends dont matter)
@@ -151,14 +136,9 @@ int getgpsinfo(char *buf) {
     //Latitude, Longitude, and other info
     if(fmax == 13 && !strcmp(field[0], "RMC")) {
         //NEED TO VERIFY FMAX FOR EACH
-        if(field[2][0] != 'A') {
-            if(gpst.lock)
-                gpst.lock = 0;
-            return 1;
-        }
-        else {
-            if(!gpst.lock)
-                gpst.lock = 1;
+        if( gpst.lock < 2 )
+            gpst.lock = field[2][0] == 'A';
+        if( gpst.lock || (!gpst.llat && !gpst.llon)) {
             gethms(1);
             getll(3);
             gpst.gspd = getndp(field[7], 3) * 1151 / 1000;
@@ -168,10 +148,9 @@ int getgpsinfo(char *buf) {
             gpst.dy = get2(field[9]);
             gpst.mo = get2(&field[9][2]);
             gpst.yr = get2(&field[9][4]);
-            // this will be slightly late
-            if(!firstlock)
-                writelock();
         }
+        if( !gpst.lock )
+            return 1;
     }
     else if(fmax == 15 && (!strcmp(field[0], "GGA") || !strcmp(field[0], "GNS"))) {
         i = field[6][0] - '0';
@@ -191,17 +170,14 @@ int getgpsinfo(char *buf) {
         //9, 10 - Alt, units M
     }
     else if(fmax == 8 && !strcmp(field[0], "GLL")) {
-        if(field[6][0] != 'A') {
-            if(strlen(field[5]))
-                gethms(5);
-            if(gpst.lock)
-                gpst.lock = 0;
-            return 1;
+        if( gpst.lock < 2 )
+            gpst.lock = field[6][0] == 'A';
+        if(gpst.lock || (!gpst.llat && !gpst.llon)) {
+            getll(1);
+            gethms(5);
         }
-        if(!gpst.lock)
-            gpst.lock = 1;
-        getll(1);
-        gethms(5);
+        if( !gpst.lock )
+            return 1;
     }
     else if(fmax == 10 && !strcmp(field[0], "VTG")) {
         gpst.gtrk = getndp(field[1], 3);
@@ -323,9 +299,13 @@ int getgpsinfo(char *buf) {
             }
         }
     }
-    else
+    else {
         printf("?%s\n", field[0]);
+        return 0;
+    }
+    return 2;
 }
+
 #include <fcntl.h>
 int main(int argc, char *argv[]) {
     int gpsfd = open(argv[1], O_RDONLY);
@@ -349,8 +329,10 @@ int main(int argc, char *argv[]) {
             j++;
         }
         nmeastring[j]= 0;
-        getgpsinfo(nmeastring);
+        i = getgpsinfo(nmeastring);
+        if( i < 2 )
+            continue;
+        printf("L:%d %d/%d/%d %02d:%02d:%02d.%03d\n", gpst.lock, gpst.mo, gpst.dy, gpst.yr, gpst.hr, gpst.mn, gpst.sc, gpst.scth );
+        printf("LAT=%d LON=%d ALT=%d\n", gpst.llat, gpst.llon, gpst.alt);
     }
-    printf("LAT=%d LON=%d ALT=%d\n", gpst.llat, gpst.llon, gpst.alt);
-    printf("STLAT=%d STLON=%d STALT=%d\n", (gpst.llat+5000)/10000, (gpst.llon+5000)/10000, (gpst.alt+50)/100);
 }
