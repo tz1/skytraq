@@ -233,10 +233,8 @@ struct cmds cmdlist[] = {
 
     {"-psav", 3, "\x0c\x00\x00", "disable PowerSave (fullsearch)"},
     {"+psav", 3, "\x0c\x01\x00", "enable PowerSave (halfsearch)"},
-    {"-psav*", 3, "\x0c\x00\x01",
-      "disable PowerSave (fullsearch), save to flash"},
-    {"+psav*", 3, "\x0c\x01\x01",
-      "enable PowerSave (halfsearch), save to flash"},
+    {"-psav*", 3, "\x0c\x00\x01", "disable PowerSave (fullsearch), save to flash"},
+    {"+psav*", 3, "\x0c\x01\x01", "enable PowerSave (halfsearch), save to flash"},
     {"-psav~", 3, "\x0c\x00\x02", "disable PowerSave (fullsearch), temporary"},
     {"+psav~", 3, "\x0c\x01\x02", "enable PowerSave (halfsearch), temporary"},
 
@@ -252,24 +250,24 @@ struct cmds cmdlist[] = {
     {"rate10*", 3, "\x0e\x0a\x01", "Set Rate to 10Hz, save to flash"},
     {"rate20", 3, "\x0e\x14\x00", "Set Rate to 20Hz"},
     {"rate20*", 3, "\x0e\x14\x01", "Set Rate to 20Hz, save to flash"},
-
-    // 25 40 50
+    {"rate25", 3, "\x0e\x19\x00", "Set Rate to 25Hz"},
+    {"rate25*", 3, "\x0e\x19\x01", "Set Rate to 25Hz, save to flash"},
+    {"rate40", 3, "\x0e\x28\x00", "Set Rate to 40Hz"},
+    {"rate40*", 3, "\x0e\x28\x01", "Set Rate to 40Hz, save to flash"},
+    {"rate50", 3, "\x0e\x32\x00", "Set Rate to 50Hz"},
+    {"rate50*", 3, "\x0e\x32\x01", "Set Rate to 50Hz, save to flash"},
 
     {"-peds", 3, "\x3c\x00\x00", "disable Pedestrian (car mode)"},
     {"+peds", 3, "\x3c\x01\x00", "enable Pedestrian"},
-    {"-peds*", 3, "\x3c\x00\x01",
-      "disable Pedestrian (car mode), save to flash"},
+    {"-peds*", 3, "\x3c\x00\x01", "disable Pedestrian (car mode), save to flash"},
     {"+peds*", 3, "\x3c\x01\x01", "enable Pedestrian, save to flash"},
 
     {"-pps", 3, "\x3e\x00\x00", "disable Pulse Per Second"},
     {"+pps", 3, "\x3e\x01\x00", "enable  Pulse Per Second, 3D fix"},
     {"+pps1s", 3, "\x3e\x02\x00", "enable Pulse Per Second, 1 Sat locked"},
-    {"-pps*", 3, "\x3e\x00\x01",
-      "disable PowerSave (fullsearch), save to flash"},
-    {"+pps*", 3, "\x3e\x01\x01",
-      "enable PowerSave (halfsearch), save to flash"},
-    {"+pps1s*", 3, "\x3e\x02\x01",
-      "enable Pulse Per Second, 1 Sat locked, save to flash"},
+    {"-pps*", 3, "\x3e\x00\x01", "disable PowerSave (fullsearch), save to flash"},
+    {"+pps*", 3, "\x3e\x01\x01", "enable PowerSave (halfsearch), save to flash"},
+    {"+pps1s*", 3, "\x3e\x02\x01", "enable Pulse Per Second, 1 Sat locked, save to flash"},
 
     {"+FACTORY", 2, "\x04\x01", "Reset to Factory settings"},
 
@@ -384,7 +382,7 @@ int main(int argc, char *argv[])
 
     // System Restart
     m = msg;
-    *m++ = 1;
+    *m++ = 0x01;
     *m++ = 1;                   // 1=hot, 2=warm, 3=cold
     *m++ = (gmt->tm_year + 1900) >> 8;
     *m++ = (gmt->tm_year + 1900) & 0xff;;
@@ -482,35 +480,6 @@ int main(int argc, char *argv[])
     m = msg;
     *m++ = 0x12;
     *m++ = 5;      // rate - [1,2,4,5,10,20]...more = 20
-    *m++ = 1;                   // MeasTime
-    *m++ = 1;                   // RawMeas
-    *m++ = 1;                   // SVCHStatus
-    *m++ = 0;                   // RCVstate
-    *m++ = 0;                   // Subframe
-    *m++ = 1;                   //toflash;
-    setupbuf((unsigned) (m - msg), msg);
-    //getresp(2);
-
-    // System Restart
-    m = msg;
-    *m++ = 1;
-    *m++ = 1;                   // 1=hot, 2=warm, 3=cold
-    *m++ = (gmt->tm_year + 1900) >> 8;
-    *m++ = (gmt->tm_year + 1900) & 0xff;;
-    *m++ = gmt->tm_mon + 1;
-    *m++ = gmt->tm_mday;
-    *m++ = gmt->tm_hour;
-    *m++ = gmt->tm_min;
-    *m++ = gmt->tm_sec;
-    *m++ = 4200 >> 8;           //lat U16 deg*100
-    *m++ = 4200 & 255;          //lat U16
-    *m++ = -10200 >> 8;         //lon U16
-    *m++ = -10200 & 255;
-    *m++ = 1000 >> 8;           //alt U16 meter
-    *m++ = 1000 & 255;
-    setupbuf((unsigned) (m - msg), msg);
-    //getresp(2);
-    *m++ = 5;        // rate - [1,2,4,5,10,20]...more = 20
     *m++ = 1;                   // MeasTime
     *m++ = 1;                   // RawMeas
     *m++ = 1;                   // SVCHStatus
