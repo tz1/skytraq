@@ -8,3 +8,5 @@ skytraq: skytraq.c
 gpsdata: gpsdata.c
 	gcc -Wall $< -o $@ 
 
+clean:
+	rm gpsdata skytraq setagps getagps
