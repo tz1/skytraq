@@ -363,9 +363,44 @@ int main(int argc, char *argv[])
         }
     }
 
-<<<<<<< HEAD
+    //Query Ephem
+    //  setupbuf (2, "\x30\x00"); // 0 - get all
+    //  getresp (34);
+    //  setupbuf (2, "\x30\x01"); // 1-32
+    //  getresp (3);
+    //  setupbuf (2, "\x30\x20"); // 1-32
+    //  getresp (3);
+    //  change 0xb1 to 0x31 as a command to upload (set) Ephem
+
+    //Set serial port - port 0, 115200, sticky (flash and sram)
+    // should scan bauds sending this with no response required
+    //bauds[] = { 4800, 9600, 19200, 38400, 57600, 115200 };, maybe 230400?
+    //setupbuf (2, "\x05\x00\x05\x01");
+    //getresp (2);
+
+    //Query Update Rate
     if (gpsfd < 0)
         opengps();
+
+    // System Restart
+    m = msg;
+    *m++ = 1;
+    *m++ = 1;                   // 1=hot, 2=warm, 3=cold
+    *m++ = (gmt->tm_year + 1900) >> 8;
+    *m++ = (gmt->tm_year + 1900) & 0xff;;
+    *m++ = gmt->tm_mon + 1;
+    *m++ = gmt->tm_mday;
+    *m++ = gmt->tm_hour;
+    *m++ = gmt->tm_min;
+    *m++ = gmt->tm_sec;
+    *m++ = 4200 >> 8;           //lat U16 deg*100
+    *m++ = 4200 & 255;          //lat U16
+    *m++ = -10200 >> 8;         //lon U16
+    *m++ = -10200 & 255;
+    *m++ = 1000 >> 8;           //alt U16 meter
+    *m++ = 1000 & 255;
+    setupbuf((unsigned) (m - msg), msg);
+    //getresp(2);
 
     //Query Ephem
     //  setupbuf (2, "\x30\x00"); // 0 - get all
@@ -383,49 +418,6 @@ int main(int argc, char *argv[])
     //getresp (2);
 
     //Query Update Rate
-=======
-            if( gpsfd < 0 )
-                opengps();
-
-// System Restart
-    m = msg;
-    *m++ = 1;
-    *m++ = 1;           // 1=hot, 2=warm, 3=cold
-    *m++ = (gmt->tm_year + 1900) >> 8;
-    *m++ = (gmt->tm_year + 1900) & 0xff;;
-    *m++ = gmt->tm_mon + 1;
-    *m++ = gmt->tm_mday;
-    *m++ = gmt->tm_hour;
-    *m++ = gmt->tm_min;
-    *m++ = gmt->tm_sec;
-    *m++ = 4200 >> 8;           //lat U16 deg*100
-    *m++ = 4200 & 255;           //lat U16
-    *m++ = -10200 >> 8;           //lon U16
-    *m++ = -10200 & 255;
-    *m++ = 1000 >> 8;           //alt U16 meter
-    *m++ = 1000 & 255;
-    setupbuf((unsigned)(m - msg), msg);
-//getresp(2);
-
-//Query Ephem
-//  setupbuf (2, "\x30\x00"); // 0 - get all
-//  getresp (34);
-//  setupbuf (2, "\x30\x01"); // 1-32
-//  getresp (3);
-//  setupbuf (2, "\x30\x20"); // 1-32
-//  getresp (3);
-//  change 0xb1 to 0x31 as a command to upload (set) Ephem
-
-
-//Set serial port - port 0, 115200, sticky (flash and sram)
-// should scan bauds sending this with no response required
-//bauds[] = { 4800, 9600, 19200, 38400, 57600, 115200 };, maybe 230400?
-//setupbuf (2, "\x05\x00\x05\x01");
-//getresp (2);
-
-
-//Query Update Rate
->>>>>>> 6140230ec01bbdb88a5020f1abdc9758e0ceb8f4
     setupbuf(1, "\x10");
     getresp(3);
     //Query WAAS Status
@@ -453,14 +445,8 @@ int main(int argc, char *argv[])
     setupbuf((unsigned) (m - msg), msg);
     getresp(3);
 
-<<<<<<< HEAD
     close(gpsfd);
     return 0;
-=======
-
-
->>>>>>> 6140230ec01bbdb88a5020f1abdc9758e0ceb8f4
-
     // (pinning params)
     m = msg;
     *m++ = 0x3b;
@@ -495,8 +481,7 @@ int main(int argc, char *argv[])
     //Binary Message rate
     m = msg;
     *m++ = 0x12;
-<<<<<<< HEAD
-    *m++ = 5;                   // rate - [1,2,4,5,10,20]...more = 20
+    *m++ = 5;      // rate - [1,2,4,5,10,20]...more = 20
     *m++ = 1;                   // MeasTime
     *m++ = 1;                   // RawMeas
     *m++ = 1;                   // SVCHStatus
@@ -525,22 +510,16 @@ int main(int argc, char *argv[])
     *m++ = 1000 & 255;
     setupbuf((unsigned) (m - msg), msg);
     //getresp(2);
-=======
-    *m++ = 5; // rate - [1,2,4,5,10,20]...more = 20
-    *m++ = 1; // MeasTime
-    *m++ = 1; // RawMeas
-    *m++ = 1; // SVCHStatus
-    *m++ = 0; // RCVstate
-    *m++ = 0; // Subframe
-    *m++ = 1; //toflash;
-    setupbuf((unsigned)(m - msg), msg);
-//getresp(2);
+    *m++ = 5;        // rate - [1,2,4,5,10,20]...more = 20
+    *m++ = 1;                   // MeasTime
+    *m++ = 1;                   // RawMeas
+    *m++ = 1;                   // SVCHStatus
+    *m++ = 0;                   // RCVstate
+    *m++ = 0;                   // Subframe
+    *m++ = 1;                   //toflash;
+    setupbuf((unsigned) (m - msg), msg);
+    //getresp(2);
 
-
-
-close(gpsfd);
-return 0;
-
-
->>>>>>> 6140230ec01bbdb88a5020f1abdc9758e0ceb8f4
+    close(gpsfd);
+    return 0;
 }
